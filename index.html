@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ResearchLens - AI Research Intelligence</title>
+    <meta name="description" content="AI-powered research intelligence platform to discover, analyze, synthesize, and compare academic papers and industry case studies." />
+    <script>
+      (function() {
+        if (typeof window !== 'undefined') {
+          // Prevent any unhandled rejections related to Vite HMR WebSocket
+          window.addEventListener('unhandledrejection', function(event) {
+            var reason = event.reason ? String(event.reason.message || event.reason) : '';
+            if (reason.includes('WebSocket') || reason.includes('vite') || reason.includes('HMR')) {
+              event.preventDefault();
+            }
+          });
+          window.addEventListener('error', function(event) {
+            var msg = event.message ? String(event.message) : '';
+            if (msg.includes('WebSocket') || msg.includes('[vite]') || msg.includes('HMR')) {
+              event.preventDefault();
+            }
+          });
+
+          if (window.WebSocket) {
+            var NativeWebSocket = window.WebSocket;
+            function SafeWebSocket(url, protocols) {
+              var isViteHmr =
+                (typeof protocols === 'string' && protocols.includes('vite')) ||
+                (Array.isArray(protocols) && protocols.some(function(p) { return typeof p === 'string' && p.includes('vite'); })) ||
+                (typeof url === 'string' && (url.includes('vite') || url.includes('/@vite/') || url.includes('localhost') || url.includes('0.0.0.0')));
+
+              if (isViteHmr) {
+                var listeners = { open: [], message: [], error: [], close: [] };
+                var socketObj = {
+                  url: String(url || ''),
+                  protocol: Array.isArray(protocols) ? protocols[0] || '' : (protocols || ''),
+                  readyState: 1, // OPEN
+                  bufferedAmount: 0,
+                  extensions: '',
+                  binaryType: 'blob',
+                  onopen: null,
+                  onmessage: null,
+                  onerror: null,
+                  onclose: null,
+                  send: function() {},
+                  close: function() {
+                    this.readyState = 3;
+                    var evt = { type: 'close', wasClean: true, code: 1000, reason: '' };
+                    if (typeof this.onclose === 'function') {
+                      try { this.onclose(evt); } catch(e) {}
+                    }
+                    (listeners.close || []).forEach(function(fn) {
+                      try { fn(evt); } catch(e) {}
+                    });
+                  },
+                  addEventListener: function(evt, fn) {
+                    if (listeners[evt]) {
+                      listeners[evt].push(fn);
+                    }
+                  },
+                  removeEventListener: function(evt, fn) {
+                    if (listeners[evt]) {
+                      listeners[evt] = listeners[evt].filter(function(h) { return h !== fn; });
+                    }
+                  },
+                  dispatchEvent: function() { return true; }
+                };
+
+                setTimeout(function() {
+                  if (socketObj.readyState === 1) {
+                    var openEvt = { type: 'open' };
+                    if (typeof socketObj.onopen === 'function') {
+                      try { socketObj.onopen(openEvt); } catch(e) {}
+                    }
+                    (listeners.open || []).forEach(function(fn) {
+                      try { fn(openEvt); } catch(e) {}
+                    });
+                  }
+                }, 10);
+
+                return socketObj;
+              }
+              return new NativeWebSocket(url, protocols);
+            }
+            SafeWebSocket.prototype = NativeWebSocket.prototype;
+            SafeWebSocket.CONNECTING = 0;
+            SafeWebSocket.OPEN = 1;
+            SafeWebSocket.CLOSING = 2;
+            SafeWebSocket.CLOSED = 3;
+            window.WebSocket = SafeWebSocket;
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
